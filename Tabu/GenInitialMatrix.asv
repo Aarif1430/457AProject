@@ -1,0 +1,18 @@
+function GetInitialMatrix()
+end
+
+function [initialM, cost] = GenInitialSln(size, numTurbine)
+    m=zeros(size,size);
+    count=0;
+    while count<numTurbine
+        i=round(rand()*4)+1;
+        j=round(rand()*4)+1;
+        if( m(i,j)==0 )
+            m(i,j)=1;
+            count=count+1;
+        end
+    end
+    
+    
+end
+
