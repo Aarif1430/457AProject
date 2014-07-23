@@ -1,51 +1,48 @@
 %This function calculate the wind velocity deficit percentage resulted from
-%the wake loss model def, u=u0*def=u0*[1-2a(1+alpha*x/rd)]. The combination 
-%from different turbine is given by:
-%def_total=((1-def1)^2)+((1-def2)^2)+...+((1-defn)^2).
-%This code is found in the paper:
-%https://etd.ohiolink.edu/rws_etd/document/get/case1270056861/inline
+%the wake loss model def
+%assuming wake spreading constant is 2
+%radius of turbine is 20m
 
-function vel = calculate_velocity(j,location,counter) 
- 
-global wind_farm; 
- 
-count = counter; 
-alpha = 0.09437; 
-a = 0.326795; 
-rotor_radius = 27.881; 
-velr1 = 0; 
- 
-for lo = 1:1:count-1 
-    for ii=1:1:counter-1 % Loop for checking turbine 1 by 1 
-         for jj = ii+1 : 1 : counter 
+function vel = calculate_velocity(x, y) 
+    global gridSize matrixSize matrix windVel
+    
+    gridSize = 80;
+    matrixSize=100;
+    %thrus coefficient of the turbine
+    ct = 0.88;
+    k = 2;
+    R = 20;
+    
+    vel_def_total = 0;
+    for i = 1 : x-1
+        for j = 1 : matrixSize
+            if matrix(i,j)==1
+                if check_wake(i*gridSize, j*gridSize, x*gridSize, y*gridSize)==1
+                    numerator
+                    vel_def_cur = (1-sqrt(1-ct))/(1+k*(x-i)*gridSize/R)^2;
+                    vel_def_total = vel_def_total+vel_def_cur^2;
+                end
+            end
+        end
+    end
+    vel_def = sqrt(vel_def_total);
+    vel = windVel * vel_def;
+end
 
-             y1 = location(ii); 
-             y2 = location(jj); 
-             ydistance = abs(wind_farm(y1,2) - wind_farm(y2,2)); 
-             radius = rotor_radius + (alpha * ydistance); 
-
-             xmin = wind_farm(y2,1) - radius; 
-             xmax = wind_farm(y2,1) + radius; 
-
-             if (xmin < wind_farm(y2,1)) && (xmax > wind_farm(y2,1)) 
-             % Eliminate turbine at ii 
-
-             location(ii) = []; 
-
-             counter = counter - 1; 
-
-             break; 
-             end
-         end 
-    end 
-end 
- 
-for ii=1:1:counter 
- y1 = location(ii); 
- ydistance = wind_farm(j,2) - wind_farm(y1,2); 
- denominator = ((alpha * ydistance / rotor_radius) + 1) ^ 2; 
- velr = (1 - (2 * a / denominator)); 
- velr1 = velr1 + ((1 - velr)^2); 
- 
-end 
-vel = 1 - (velr1 ^ 0.5); 
+%check if turbine 2(x2,y2) is in wake of turbine 1(x1,y1)
+function check = check_wake(x1,y1,x2,y2)
+    %wind direction is 0 degree
+    theta =0;
+    alpha = arctan(2);
+    R=20;
+    k=2;
+    
+    numerator = (x2-x1)*cos(theta)+(y2-y1)*sin(theta)+R/k;
+    denominator = sqrt( (x2-x1+R/k*cos(theta))^2 + (y2-y1+R/k*cos(theta))^2);
+    beta = arccos( numerator/denominator );
+    if(beta<alpha)
+        check=1;
+    else
+        check=0;
+    end
+end
