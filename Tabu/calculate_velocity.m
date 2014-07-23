@@ -3,8 +3,8 @@
 %assuming wake spreading constant is 2
 %radius of turbine is 20m
 
-function vel = calculate_velocity(x, y) 
-    global gridSize matrixSize matrix windVel
+function vel = calculate_velocity(matrix, x, y) 
+    global gridSize matrixSize windVel
     
     gridSize = 80;
     matrixSize=100;

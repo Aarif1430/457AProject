@@ -1,57 +1,50 @@
-function [ST STCost TabuEdges] = GenInitialMatrix(numTurbine)
-
-% This function generates a random spanning tree for a graph.
-% 
-% Inputs:
-%   Graph: A spare matrix that represents undirected graph. The element
-%          (i, j) represents the weigh of the edge between nodes i and j. 
-%          The matrix has to be symmetric.
-%
-% Outputs:
-%   ST:  A spare matrix that represents the spanning tree obtained. 
-%        The element (i,j) is 1 if nodes i and j are connected in the tree, 
-%        otherwise it's 0. The matrix is symmetric.
-%   STCost: The cost of the output spanning tree
-
-% Get the number of nodes and edges in the Graph
-NumNodes = size(Graph, 1);
-NumEdges = nnz(Graph) / 2;
-
-% Initialize the spanning tree
-ST = sparse(NumNodes, NumNodes);
-
-% Get a list of the edges in the graph in the form of (N1, N2)
-[N1 N2] = find(Graph);
-IdxToKeep = N1<N2;       % Keep the edge if N1 < N2
-N1 = N1(IdxToKeep);     N2 = N2(IdxToKeep);
-
-%  Randomly shuffle the list of edges
-IdxShuffled = randperm(NumEdges);
-N1 = N1(IdxShuffled);   N2 = N2(IdxShuffled); 
-
-% Initially assign each node to a different sub-tree 
-SubtreeId = 1:NumNodes;
-
-% Repeat for each edge
-for e = 1:NumEdges
-    % Check that the nodes connected by the current edge are not 
-    % in the same sub-tree
-    if SubtreeId(N1(e)) ~= SubtreeId(N2(e))
-        % Add the edge to the spanning tree
-        ST(N1(e), N2(e)) = 1;
-        % Merge the two sub-trees at the end of the current edge
-        IdxSubTree2 = (SubtreeId == SubtreeId(N2(e))); 
-        SubtreeId(IdxSubTree2) = SubtreeId(N1(e));
-    end
+function GetInitialMatrix()
+    
 end
 
-% Make the spanning tree matrix symmetric
-ST = ST + ST';
+function [initialM, result] = GenInitialSln(size, numTurbine)
+    m=zeros(size,size);
+    count=0;
+    while count<numTurbine
+        i=ceil(rand()*size);
+        j=ceil(rand()*size);
+        if( m(i,j)==0 )
+            m(i,j)=1;
+            count=count+1;
+        end
+    end
+    
+    initialM = m;
+    result = CalculateCostFunc(m);
+end
 
-% Calculate the cost of the spanning tree
-STCost = sum(sum(Graph .* ST)) / 2;
+function result = CalculateCostFunc(m)
+    N=sum(sum(m));
+    cost = N*(2/3+1/3*exp(-0.00174*N^2));
+    result = cost / CalculateTotalPower(m);
+end
 
-% Initialize the tabu list. The tabu list represents that set of edges
-% that can't be deleted to find the neighbourhood of the current solution
-TabuEdges = sparse(NumNodes, NumNodes);
+function pwr = CalculateTotalPower(m)
+    global matrixSize
+    
+    totalpower=0;
+    for i = 1:matrixSize
+        for j = 1:matrixSize
+            if(m(i,j)==1)
+                totalpower = totalpower+CalculateSingleTurbinePower(calculate_velocity(m,i,j));
+            end
+        end
+    end
+    pwr=totalpower;
+end
 
+function pwr = CalculateSingleTurbinePower(vel)
+    global rotorRadius
+    A = pi*rotorRadius^2;
+    rho = 1.2;
+    Cp = 0.35;
+    Ng = 0.7;
+    Nb = 0.95;
+    
+    pwr = 0.5 * rho * A * Cp * vel^3 * Ng * Nb;
+end
