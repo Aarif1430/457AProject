@@ -1,5 +1,4 @@
-[bestSoln, solnCost] = TabuSearch(2, 10, 5, 3);
+[bestSoln, solnCost] = TabuSearch(1, 2,2, 2);
 
 solnCost
-
 bestSoln

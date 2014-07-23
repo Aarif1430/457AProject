@@ -4,11 +4,12 @@
 function  [BestSoln BestSolnCost] = TabuSearch(TabuLength, NumIterations,matrixSize, numOfTurbine)
 
 
-global size gridSize windVel rotorRadius
+global size gridSize windVel rotorRadius N
 size= matrixSize;
 gridSize = 80;
 windVel=12;
 rotorRadius=20;
+N=numOfTurbine;
             
 % This function implements the tabu search algorithm.
 %
@@ -46,7 +47,7 @@ for nIt = 1 : NumIterations
         BestSolnCost = SolnCost;
     end
     
-    TabuList
+    %BestSoln
 end
 
 end
@@ -68,15 +69,17 @@ function [initialM, result, TabuList] = GenInitialSln(size, numTurbine)
     TabuList=zeros(size,size);
 end
 
-function [BestNeighbour BestNeighbourCost TabuList]=GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost)
+function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost)
     global size
     
-    curBestCost = BestSolnCost;
+    BestNeighbour = Soln;
+    BestNeighbourCost = Inf;
+    curBestCost = Inf;
     curBestSoln = Soln;
     potentialTabu = [0,0];
     for i = 1:size
         for j = 1:size
-            if Soln(i,j)==1 && TabuList(i,j)<=0
+            if Soln(i,j)==1
                 %upper left
                 if(i-1>0 && j-1>0 && Soln(i-1,j-1)~=1)
                     matrix = Soln;
@@ -204,16 +207,24 @@ function [BestNeighbour BestNeighbourCost TabuList]=GetBestNeighbourSolnFn(Soln,
     %update other tabu value
     TabuList=TabuList-1;
     
-    BestNeighbour = curBestSoln;
-    BestNeighbourCost = curBestCost;
-    if potentialTabu(1)~=0
-        TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
+    %aspiration criterion
+    if or(TabuList(potentialTabu(1),potentialTabu(2))<=0, curBestSoln < BestSolnCost)
+        BestNeighbour = curBestSoln;
+        BestNeighbourCost = curBestCost;
+        if potentialTabu(1)~=0
+            TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
+        end
     end
+    
+    PWR=CalculateTotalPower(curBestSoln);
+    %PWR
+    
 end
 
 function result = CalculateCostFunc(m)
     N=sum(sum(m));
     cost = N*(2/3+1/3*exp(-0.00174*N^2));
+    %cost
     result = cost / CalculateTotalPower(m);
 end
 
@@ -251,22 +262,27 @@ function vel = calculate_velocity(matrix, x, y)
     R = 20;
     
     vel_def_total = 0;
-    for i = 1 : x-1
-        for j = 1 : size
+    vel = windVel;
+    
+    for i = 1 : size
+        for j = 1 : y-1
             if matrix(i,j)==1
                 if check_wake(i*gridSize, j*gridSize, x*gridSize, y*gridSize)==1
-                    vel_def_cur = (1-sqrt(1-ct))/(1+k*(x-i)*gridSize/R)^2;
+                    vel_def_cur = (1-sqrt(1-ct))/(1+k*(y-j)*gridSize/R)^2;
                     vel_def_total = vel_def_total+vel_def_cur^2;
                 end
             end
         end
     end
     vel_def = sqrt(vel_def_total);
-    vel = windVel * vel_def;
+    % do not update velocity if turbine is not affected by wake loss
+    if (vel_def ~= 0)
+        vel = windVel * vel_def;
+    end
 end
 
-%check if turbine 2(x2,y2) is in wake of turbine 1(x1,y1)
-function check = check_wake(x1,y1,x2,y2)
+%check if turbine i(x2,y2) is in wake of turbine j(x1,y1)
+function check = check_wake(y1,x1,y2,x2)
     %wind direction is 0 degree
     theta =0;
     alpha = atan(2);
@@ -276,6 +292,7 @@ function check = check_wake(x1,y1,x2,y2)
     numerator = (x2-x1)*cos(theta)+(y2-y1)*sin(theta)+R/k;
     denominator = sqrt( (x2-x1+R/k*cos(theta))^2 + (y2-y1+R/k*cos(theta))^2);
     beta = acos( numerator/denominator );
+
     if(beta<alpha)
         check=1;
     else
