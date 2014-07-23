@@ -4,12 +4,11 @@
 function  [BestSoln BestSolnCost] = TabuSearch(TabuLength, NumIterations,matrixSize, numOfTurbine)
 
 
-global size gridSize windVel rotorRadius N
+global size gridSize windVel rotorRadius
 size= matrixSize;
 gridSize = 80;
 windVel=12;
 rotorRadius=20;
-N=numOfTurbine;
             
 % This function implements the tabu search algorithm.
 %
@@ -47,7 +46,7 @@ for nIt = 1 : NumIterations
         BestSolnCost = SolnCost;
     end
     
-    %BestSoln
+    TabuList
 end
 
 end
@@ -210,13 +209,9 @@ function [BestNeighbour BestNeighbourCost TabuList]=GetBestNeighbourSolnFn(Soln,
     if potentialTabu(1)~=0
         TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
     end
-    
-    
-    
 end
 
 function result = CalculateCostFunc(m)
-    global N
     N=sum(sum(m));
     cost = N*(2/3+1/3*exp(-0.00174*N^2));
     result = cost / CalculateTotalPower(m);
