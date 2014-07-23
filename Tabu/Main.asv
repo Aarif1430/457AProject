@@ -1,4 +1,4 @@
-[bestSoln, solnCost] = TabuSearch(50, 100, @GenInitialST, @GetBestNeighbourST);
+[bestSoln, solnCost] = TabuSearch(1, 100, 3, 3);
 
 solnCost
 

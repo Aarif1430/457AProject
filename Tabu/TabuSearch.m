@@ -93,47 +93,47 @@ function [BestNeighbour BestNeighbourCost TabuList]=GetBestNeighbourSolnFn(Soln,
                 end
                 
                 %left
-                if(i-1>0 && Soln(i-1,j)~=1)
+                if(j-1>0 && Soln(i,j-1)~=1)
                     matrix = Soln;
                     
-                    matrix(i-1,j)=1;
+                    matrix(i,j-1)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i-1,j];
+                        potentialTabu=[i,j-1];
                     end
                 end
                 
                 %lower left
-                if(i-1>0 && j+1<=size && Soln(i-1,j+1)~=1)
+                if(i+1<=size && j-1>0 && Soln(i+1,j-1)~=1)
                     matrix = Soln;
                     
-                    matrix(i-1,j+1)=1;
+                    matrix(i+1,j-1)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i-1,j+1];
+                        potentialTabu=[i+1,j-1];
                     end
                 end
                 
                 %lower
-                if( j+1<=size && Soln(i,j+1)~=1)
+                if( i+1<=size && Soln(i+1,j)~=1)
                     matrix = Soln;
                     
-                    matrix(i,j+1)=1;
+                    matrix(i+1,j)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i,j+1];
+                        potentialTabu=[i+1,j];
                     end
                 end
                 
@@ -153,47 +153,47 @@ function [BestNeighbour BestNeighbourCost TabuList]=GetBestNeighbourSolnFn(Soln,
                 end
                 
                 %right
-                if( i+1<=size && Soln(i+1,j)~=1)
+                if( j+1<=size && Soln(i,j+1)~=1)
                     matrix = Soln;
                     
-                    matrix(i+1,j)=1;
+                    matrix(i,j+1)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i+1,j];
+                        potentialTabu=[i,j+1];
                     end
                 end
                 
                 %upper right
-                if( i+1<=size && j-1>0 && Soln(i+1,j-1)~=1)
+                if( i-1>0 && j+1<=size && Soln(i-1,j+1)~=1)
                     matrix = Soln;
                     
-                    matrix(i+1,j-1)=1;
+                    matrix(i-1,j+1)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i+1,j-1];
+                        potentialTabu=[i-1,j+1];
                     end
                 end
                 
                 %upper
-                if( j-1>0 && Soln(i,j-1)~=1)
+                if( i-1>0 && Soln(i-1,j)~=1)
                     matrix = Soln;
                     
-                    matrix(i,j-1)=1;
+                    matrix(i-1,j)=1;
                     matrix(i,j)=0;
                     
                     cost = CalculateCostFunc(matrix);
                     if(cost < curBestCost)
                         curBestCost = cost;
                         curBestSoln = matrix;
-                        potentialTabu=[i,j-1];
+                        potentialTabu=[i-1,j];
                     end
                 end
           
