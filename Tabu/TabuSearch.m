@@ -255,7 +255,7 @@ end
 
 function vel = calculate_velocity(matrix, x, y) 
     global gridSize size windVel
-    
+
     %thrus coefficient of the turbine
     ct = 0.88;
     k = 2;
@@ -277,7 +277,7 @@ function vel = calculate_velocity(matrix, x, y)
     vel_def = sqrt(vel_def_total);
     % do not update velocity if turbine is not affected by wake loss
     if (vel_def ~= 0)
-        vel = windVel * vel_def;
+        vel = windVel * (1-vel_def);
     end
 end
 
