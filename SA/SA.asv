@@ -10,15 +10,10 @@
 
 
 
-function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numOfTurbine)
+function [costs, bestSol] = SA(schedule, jobs, m, n, iterations, sT, ...
+                               fT, alpha, costFunc, genNeighborFunc)
                            
-  global size gridSize windVel rotorRadius N
-  size= matrixSize;
-  gridSize = 80;
-  windVel=12;
-  rotorRadius=20;
-  N=numOfTurbine; 
-  
+       
   costsEnd = 0;
   costs = [];
   %generate a random initial soln
