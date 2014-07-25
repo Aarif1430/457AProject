@@ -9,12 +9,8 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
     windVel=12;
     rotorRadius=20;
     crossoverAlpha=alpha;
-    rand('state' ,0'); % Reset the random generator
-    %popsize=20; % Population size
     MaxGen=iterations; % Max number of generations
     count=0;    % counter
-    %pc=0.95;    % Crossover probability
-    %pm=0.05;    % Mutation probability
     N = numOfTurbines;
     nsbit = 2*N;   % String length (bits)
     size = matrixSize;
@@ -53,7 +49,7 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
     
     [value,index] = max(fitness);
     bestSoln=chromesomeToMatrix(popnew(index,:));
-    bestCost=value;
+    bestCost=(1-0.00001*value)/value;   %change the fitness back to our objective function
     
     % Display results
     %set(gcf,'color','w');
