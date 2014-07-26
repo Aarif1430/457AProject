@@ -5,7 +5,7 @@
 
 function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbine, numOfAnt)
                            
-  global size gridSize windVel rotorRadius N pheromoneMatrix alpha beta r0
+  global size gridSize windVel rotorRadius N pheromoneMatrix alpha beta r0 windSpeedMatrix
   size= matrixSize;
   gridSize = 80;
   windVel=12;
@@ -17,6 +17,8 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
   rho1=0.6;
   rho2=1;
 
+  windSpeedMatrix = initWindSpeedMatrix(size);
+  windSpeedMatrix
   pheromoneMatrix=ones(size);%initial pheromone concentration is 1
   curBestSol=zeros(size);
   curBestSolnCost=Inf;
@@ -45,9 +47,25 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
   
 end
 
+% initialize the wind park with different wind speeds
+function windSpeedMatrix = initWindSpeedMatrix(size)
+    global windVel
+    % init a N by N matrix
+    m = zeros(size);
+    
+    for i=1:2:size
+        windDiff = 2 * i;
+        m(i,:) = windDiff + windVel;
+        if (i+1 <= size)
+            m(i+1,:) = windDiff + windVel;
+        end
+    end
+    windSpeedMatrix=m;
+end
+
 % generate solution based on pheromone concentration
 function [m, cost] = GenSln(size, numTurbine)
-    global pheromoneMatrix alpha beta r0
+    global pheromoneMatrix alpha beta r0 windSpeedMatrix
 
     probVector=zeros(1,size*size);
     m=zeros(size,size);
@@ -57,7 +75,8 @@ function [m, cost] = GenSln(size, numTurbine)
     %calculate probability function for each location in the wind park
     for i = 1:size
         for j = 1:size
-            probVector(1, (i-1)*size+j) = (pheromoneMatrix(i, j)^alpha) * ((1)^beta);
+            desirability = windSpeedMatrix(i, j);
+            probVector(1, (i-1)*size+j) = (pheromoneMatrix(i, j)^alpha) * ((desirability)^beta);
         end
     end
 
@@ -138,7 +157,7 @@ function pwr = CalculateSingleTurbinePower(vel)
 end
 
 function vel = calculate_velocity(matrix, x, y) 
-    global gridSize size windVel
+    global gridSize size windVel windSpeedMatrix
 
     %thrus coefficient of the turbine
     ct = 0.88;
@@ -146,7 +165,7 @@ function vel = calculate_velocity(matrix, x, y)
     R = 20;
     
     vel_def_total = 0;
-    vel = windVel;
+    vel = windSpeedMatrix(x, y);
     
     for i = 1 : size
         for j = 1 : y-1
