@@ -22,12 +22,17 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
         % Record as the history
         fitold=fitness; pop=popnew; 
         for j=1:popsize,
-            % Crossover pair
-            ii=floor(popsize*rand)+1; jj=floor(popsize*rand)+1;
             % Cross over
             if pc>rand,
                 %TODO: check for duplicate locations?
-                [popnew(ii,:),popnew(jj,:)]=crossover(pop(ii,:),pop(jj,:));
+                while true
+                    % Crossover pair
+                    ii=floor(popsize*rand)+1; jj=floor(popsize*rand)+1;
+                    [popnew(ii,:),popnew(jj,:)]=crossover(pop(ii,:),pop(jj,:));
+                    if checkDuplicate(popnew(ii,:))==0 && checkDuplicate(popnew(jj,:))==0
+                        break;
+                    end
+                end
                 % Evaluate the new pairs
                 count=count+2;
                 evolve(ii); 
@@ -55,6 +60,22 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
     %set(gcf,'color','w');
     %5subplot (2,1,1); plot(bestsol); title('Best estimates');
     %subplot(2,1,2); plot(bestfun); title('Fitness');
+end
+
+function result=checkDuplicate(chromosome)
+    positionSets=zeros(length(chromosome)/2,2);
+    
+    for i =1:length(chromosome)/2
+        positionSets(i,1)=chromosome(i);
+        positionSets(i,2)=chromosome(i+length(chromosome)/2);
+    end
+    
+    uniqueSets=unique(positionSets,'rows');
+    if length(uniqueSets)~=length(positionSets)
+        result=1;
+    else
+        result=0;
+    end
 end
 
 % All the sub functions
