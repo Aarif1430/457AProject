@@ -1,16 +1,9 @@
-% Simulated Annealing Algorithm
+% Ant Colony
 %
-% costs: history of cost for each iteration's schedule.
-% bestSol: best solution for the given sT and fT.
-%
-% iterations: number of iteration for each T.
-% sT: start T.
-% fT: final T.
-% alpha: alpha in geometric cooling schedule.
+% 
 
 
-
-function [bestSolCost, bestSol] = ACO(iterations, matrixSize, numOfTurbine, numOfAnt)
+function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbine, numOfAnt)
                            
   global size gridSize windVel rotorRadius N pheromoneMatrix alpha beta r0
   size= matrixSize;
@@ -18,10 +11,15 @@ function [bestSolCost, bestSol] = ACO(iterations, matrixSize, numOfTurbine, numO
   windVel=12;
   rotorRadius=20;
   N=numOfTurbine; 
+  alpha=1;
+  beta=1;
+  r0=0.5;
+  rho1=0.6;
+  rho2=1;
 
   pheromoneMatrix=ones(size);%initial pheromone concentration is 1
   curBestSol=zeros(size);
-  curBestSolnCost=INF;
+  curBestSolnCost=Inf;
 
   for it = 1:iterations
     for k = 1:numOfAnt
@@ -33,8 +31,18 @@ function [bestSolCost, bestSol] = ACO(iterations, matrixSize, numOfTurbine, numO
     end % end for ants
 
     %update pheromone concentrate
+    reinforce=newSol.*pheromoneMatrix;
+    reinforce=(1-rho1)*reinforce+newSol*rho2*(0.000001/curBestSolnCost);
 
-end % end iterations
+    decay=(1-newSol).*pheromoneMatrix;
+    decay=(1-rho1)*decay;
+
+    pheromoneMatrix=reinforce+decay;
+    
+  end % end iterations
+  
+  
+  
 end
 
 % generate solution based on pheromone concentration
@@ -56,8 +64,8 @@ function [m, cost] = GenSln(size, numTurbine)
     while count<numTurbine
         if rand() >= r0
             %Roulette Wheel method
-            probVector = probVector / sum(probMatrix);
-            cumulativeProbVector = cumsum(probMatrix);
+            probVector = probVector / sum(probVector);
+            cumulativeProbVector = cumsum(probVector);
             randnum = rand();
             for ii = 0:length(cumulativeProbVector)
                 if ii == 0
@@ -77,13 +85,19 @@ function [m, cost] = GenSln(size, numTurbine)
 
         %place a turbine at this chosen location in the wind park
         %first check if the location is already taken
-        i = floor(loc/size);
-        j = loc mod size;
-        if( m(i,j)==0 )
+        i = ceil(loc/size);
+        j = mod(loc,size);
+        if j==0
+            j = size;
+            if (i~=1)
+                i = i - 1;
+            end
+        end
+        if m(i,j)==0 
             m(i,j)=1;
             count=count+1;
             % set the probability of the recently chosen location to 0 to avoid choosing it again
-            probVector[resetIndex] = 0;
+            probVector(resetIndex) = 0;
         end
     end
 
