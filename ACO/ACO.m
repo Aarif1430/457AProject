@@ -2,9 +2,7 @@
 %
 % 
 
-
-function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbine, numOfAnt)
-                           
+function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbine, numOfAnt)  
   global size gridSize windVel rotorRadius N pheromoneMatrix alpha beta r0 windSpeedMatrix
   size= matrixSize;
   gridSize = 80;
@@ -18,7 +16,6 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
   rho2=1;
 
   windSpeedMatrix = initWindSpeedMatrix(size);
-  windSpeedMatrix
   pheromoneMatrix=ones(size);%initial pheromone concentration is 1
   curBestSol=zeros(size);
   curBestSolnCost=Inf;
@@ -40,7 +37,7 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
     decay=(1-rho1)*decay;
 
     pheromoneMatrix=reinforce+decay;
-    
+
   end % end iterations
   
   
@@ -51,13 +48,13 @@ end
 function windSpeedMatrix = initWindSpeedMatrix(size)
     global windVel
     % init a N by N matrix
-    m = zeros(size);
+    m = ones(size);
+    m = m*12;
     
-    for i=1:2:size
-        windDiff = 2 * i;
-        m(i,:) = windDiff + windVel;
-        if (i+1 <= size)
-            m(i+1,:) = windDiff + windVel;
+    for i=1:floor(size/4)
+        for j=0:3
+            windDiff = 2 * j;
+            m(i+j,:) = windDiff + windVel;
         end
     end
     windSpeedMatrix=m;
@@ -106,6 +103,7 @@ function [m, cost] = GenSln(size, numTurbine)
         %first check if the location is already taken
         i = ceil(loc/size);
         j = mod(loc,size);
+
         if j==0
             j = size;
             if (i~=1)
