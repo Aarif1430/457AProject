@@ -1,4 +1,4 @@
-function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numParticle)
+function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numParticle, numSwarm)
     global N size gridSize windVel rotorRadius windSpeedMatrix;
     % Initializing the parameters
     gridSize = 80;
@@ -7,54 +7,74 @@ function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numP
     N=numOfTurbine;
     size=matrixSize;
      
-    pBestLocs = zeros(numParticle,2*numOfTurbine);
-    pBestValue = zeros(numParticle,1);
+    pBestLocs = zeros(numParticle, 2*numOfTurbine, numSwarm);
+    pBestValue = zeros(numParticle, 1, numSwarm);
     gBestValue = Inf;
-    gBestLocs = zeros(1,2*numOfTurbine);
-    curLocs = zeros(numParticle,2*numOfTurbine);
+    gBestLocs = zeros(1, 2*numOfTurbine);
+    curLocs = zeros(numParticle, 2*numOfTurbine, numSwarm);
     
     windSpeedMatrix = initWindSpeedMatrix(size);
     
-    for i=1:numParticle
-        [locs, cost] = GenInitialSln(size, numOfTurbine);
-        pBestLocs(i,:)=locs;
-        pBestValue(i,1)=cost;
-        curLocs(i,:)=locs;
-        
-        if(cost<gBestValue)
-            gBestLocs(1,:)=locs;
-            gBestValue=cost;
+    for h=1:numSwarm
+        for i=1:numParticle
+            [locs, cost] = GenInitialSln(size, numOfTurbine);
+            pBestLocs(i,:,h)=locs;
+            pBestValue(i,1,h)=cost;
+            curLocs(i,:,h)=locs;
+
+            if(cost<gBestValue)
+                gBestLocs(1,:)=locs;
+                gBestValue=cost;
+            end
         end
     end
     
-    psoPrevVels = zeros(numParticle, 2*numOfTurbine);
-    psoVels = zeros(numParticle, 2*numOfTurbine);
+    psoPrevVels = zeros(numParticle, 2*numOfTurbine, numSwarm);
+    psoVels = zeros(numParticle, 2*numOfTurbine, numSwarm);
     
     for j=1:NumIterations
-        for k=1:numParticle
-            while true   
-                psoVels(k,:) = 0.792*psoPrevVels(k,:)+1.4944*rand()*(pBestLocs(k,:)-curLocs(k,:))+1.4944*rand()*(gBestLocs-curLocs(k,:));
-                curLocs(k,:) = round(curLocs(k,:)+psoVels(k,:));
-                if( all(curLocs(k,:)>0)==1 && all(curLocs(k,:)<=size)==1 )
-                    break;
+        for l=1:numSwarm
+            for k=1:numParticle
+                while true   
+                    psoVels(k,:,l) = 0.792*psoPrevVels(k,:,l)+1.4944*rand()*(pBestLocs(k,:,l)-curLocs(k,:,l))+1.4944*rand()*(gBestLocs-curLocs(k,:,l));
+                    curLocs(k,:,l) = round(curLocs(k,:,l)+psoVels(k,:,l));
+                    if( checkDuplicate(curLocs(k,:,l))==0&& all(curLocs(k,:,l)>0)==1 && all(curLocs(k,:,l)<=size)==1 )
+                        break;
+                    end
                 end
-            end
 
-            cost = CalculateCostFunc( positionVToMatrix(curLocs(k,:)) );
-            if(cost<pBestValue)
-                pBestLocs(k,:) =curLocs(k,:);
-                pBestValue(k,1) = cost;
-            end
-            
-            if(cost<gBestValue)
-                pBestLocs(1,:)=curLocs(k,:);
-                gBestValue = cost;
+                cost = CalculateCostFunc( positionVToMatrix(curLocs(k,:,l)) );
+                if(cost<pBestValue)
+                    pBestLocs(k,:,l) =curLocs(k,:,l);
+                    pBestValue(k,1,l) = cost;
+                end
+
+                if(cost<gBestValue)
+                    gBestLocs(1,:)=curLocs(k,:,l);
+                    gBestValue = cost;
+                end
             end
         end
     end
     
     BestSln=positionVToMatrix(gBestLocs);
     BestSlnCost=gBestValue;
+end
+
+function result=checkDuplicate(chromosome)
+    positionSets=zeros(length(chromosome)/2,2);
+    
+    for i =1:length(chromosome)/2
+        positionSets(i,1)=chromosome(i);
+        positionSets(i,2)=chromosome(i+length(chromosome)/2);
+    end
+    
+    uniqueSets=unique(positionSets,'rows');
+    if length(uniqueSets)~=length(positionSets)
+        result=1;
+    else
+        result=0;
+    end
 end
 
 % initialize the wind park with different wind speeds
