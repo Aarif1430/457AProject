@@ -1,4 +1,4 @@
-function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numParticle, numSwarm)
+function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numParticle)
     global N size gridSize windVel rotorRadius windSpeedMatrix;
     % Initializing the parameters
     gridSize = 80;
@@ -7,52 +7,48 @@ function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numP
     N=numOfTurbine;
     size=matrixSize;
      
-    pBestLocs = zeros(numParticle, 2*numOfTurbine, numSwarm);
-    pBestValue = zeros(numParticle, 1, numSwarm);
+    pBestLocs = zeros(numParticle, 2*numOfTurbine);
+    pBestValue = zeros(numParticle, 1);
     gBestValue = Inf;
     gBestLocs = zeros(1, 2*numOfTurbine);
-    curLocs = zeros(numParticle, 2*numOfTurbine, numSwarm);
+    curLocs = zeros(numParticle, 2*numOfTurbine);
     
     windSpeedMatrix = initWindSpeedMatrix(size);
     
-    for h=1:numSwarm
-        for i=1:numParticle
-            [locs, cost] = GenInitialSln(size, numOfTurbine);
-            pBestLocs(i,:,h)=locs;
-            pBestValue(i,1,h)=cost;
-            curLocs(i,:,h)=locs;
+    for i=1:numParticle
+        [locs, cost] = GenInitialSln(size, numOfTurbine);
+        pBestLocs(i,:)=locs;
+        pBestValue(i,1)=cost;
+        curLocs(i,:)=locs;
 
-            if(cost<gBestValue)
-                gBestLocs(1,:)=locs;
-                gBestValue=cost;
-            end
+        if(cost<gBestValue)
+            gBestLocs(1,:)=locs;
+            gBestValue=cost;
         end
     end
     
-    psoPrevVels = zeros(numParticle, 2*numOfTurbine, numSwarm);
-    psoVels = zeros(numParticle, 2*numOfTurbine, numSwarm);
+    psoPrevVels = zeros(numParticle, 2*numOfTurbine);
+    psoVels = zeros(numParticle, 2*numOfTurbine);
     
     for j=1:NumIterations
-        for l=1:numSwarm
-            for k=1:numParticle
-                while true   
-                    psoVels(k,:,l) = 0.792*psoPrevVels(k,:,l)+1.4944*rand()*(pBestLocs(k,:,l)-curLocs(k,:,l))+1.4944*rand()*(gBestLocs-curLocs(k,:,l));
-                    curLocs(k,:,l) = round(curLocs(k,:,l)+psoVels(k,:,l));
-                    if( checkDuplicate(curLocs(k,:,l))==0&& all(curLocs(k,:,l)>0)==1 && all(curLocs(k,:,l)<=size)==1 )
-                        break;
-                    end
+        for k=1:numParticle
+            while true   
+                psoVels(k,:) = 0.792*psoPrevVels(k,:)+1.4944*rand()*(pBestLocs(k,:)-curLocs(k,:))+1.4944*rand()*(gBestLocs-curLocs(k,:));
+                curLocs(k,:) = round(curLocs(k,:)+psoVels(k,:));
+                if(all(curLocs(k,:)>0)==1 && all(curLocs(k,:)<=size)==1 &&checkDuplicate(curLocs(k,:))==0 )
+                    break;
                 end
+            end
 
-                cost = CalculateCostFunc( positionVToMatrix(curLocs(k,:,l)) );
-                if(cost<pBestValue)
-                    pBestLocs(k,:,l) =curLocs(k,:,l);
-                    pBestValue(k,1,l) = cost;
-                end
+            cost = CalculateCostFunc( positionVToMatrix(curLocs(k,:)) );
+            if(cost<pBestValue(k,1))
+                pBestLocs(k,:) =curLocs(k,:);
+                pBestValue(k,1) = cost;
+            end
 
-                if(cost<gBestValue)
-                    gBestLocs(1,:)=curLocs(k,:,l);
-                    gBestValue = cost;
-                end
+            if(cost<gBestValue)
+                gBestLocs(1,:)=curLocs(k,:);
+                gBestValue = cost;
             end
         end
     end
