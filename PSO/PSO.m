@@ -32,9 +32,14 @@ function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numP
     
     for j=1:NumIterations
         for k=1:numParticle
-            psoVels(k,:) = 0.792*psoPrevVels(k,:)+1.4944*rand()*(pBestLocs(k,:)-curLocs(k,:))+1.4944*rand()*(gBestLocs-curLocs(k,:));
-            curLocs(k,:) = round(curLocs(k,:)+psoVels(k,:));
-            
+            while true   
+                psoVels(k,:) = 0.792*psoPrevVels(k,:)+1.4944*rand()*(pBestLocs(k,:)-curLocs(k,:))+1.4944*rand()*(gBestLocs-curLocs(k,:));
+                curLocs(k,:) = round(curLocs(k,:)+psoVels(k,:));
+                if( all(curLocs(k,:)>0)==1 && all(curLocs(k,:)<=size)==1 )
+                    break;
+                end
+            end
+
             cost = CalculateCostFunc( positionVToMatrix(curLocs(k,:)) );
             if(cost<pBestValue)
                 pBestLocs(k,:) =curLocs(k,:);
@@ -48,7 +53,7 @@ function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numP
         end
     end
     
-    BestSln=gBestLocs;
+    BestSln=positionVToMatrix(gBestLocs);
     BestSlnCost=gBestValue;
 end
 
