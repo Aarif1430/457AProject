@@ -1,5 +1,0 @@
-[bestSoln, solnCost] = TabuSearch(1, 100, 3, 3);
-
-solnCost
-
-bestSoln

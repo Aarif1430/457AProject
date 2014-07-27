@@ -12,7 +12,7 @@
 
 function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numOfTurbine)
                            
-  global size gridSize windVel rotorRadius N
+  global size gridSize windVel rotorRadius N windSpeedMatrix
   size= matrixSize;
   gridSize = 80;
   windVel=12;
@@ -21,6 +21,9 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
   
   costsEnd = 0;
   costs = [];
+  
+  windSpeedMatrix = initWindSpeedMatrix(size);
+  
   %generate a random initial soln
   [bestSol,bestSolCost] = GenInitialSln(size, N);
   acceptedSol = bestSol;
@@ -54,6 +57,22 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
     end
     T = T * alpha; % cooling
   end
+end
+
+% initialize the wind park with different wind speeds
+function windSpeedMatrix = initWindSpeedMatrix(size)
+    global windVel
+    % init a N by N matrix
+    m = ones(size);
+    m = m*12;
+    
+    for i=1:floor(size/4)
+        for j=0:3
+            windDiff = 2 * j;
+            m(i+j,:) = windDiff + windVel;
+        end
+    end
+    windSpeedMatrix=m;
 end
 
 function [initialM, result] = GenInitialSln(size, numTurbine)
@@ -236,7 +255,7 @@ function pwr = CalculateSingleTurbinePower(vel)
 end
 
 function vel = calculate_velocity(matrix, x, y) 
-    global gridSize size windVel
+    global gridSize size windVel windSpeedMatrix
 
     %thrus coefficient of the turbine
     ct = 0.88;
@@ -244,7 +263,7 @@ function vel = calculate_velocity(matrix, x, y)
     R = 20;
     
     vel_def_total = 0;
-    vel = windVel;
+    vel = windSpeedMatrix(x,y);
     
     for i = 1 : size
         for j = 1 : y-1
@@ -259,7 +278,7 @@ function vel = calculate_velocity(matrix, x, y)
     vel_def = sqrt(vel_def_total);
     % do not update velocity if turbine is not affected by wake loss
     if (vel_def ~= 0)
-        vel = windVel * (1-vel_def);
+        vel = vel * (1-vel_def);
     end
 end
 

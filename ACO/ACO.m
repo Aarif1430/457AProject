@@ -178,7 +178,7 @@ function vel = calculate_velocity(matrix, x, y)
     vel_def = sqrt(vel_def_total);
     % do not update velocity if turbine is not affected by wake loss
     if (vel_def ~= 0)
-        vel = windVel * (1-vel_def);
+        vel = vel * (1-vel_def);
     end
 end
 

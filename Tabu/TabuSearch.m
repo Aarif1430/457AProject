@@ -4,7 +4,7 @@
 function  [BestSoln BestSolnCost] = TabuSearch(TabuLength, NumIterations,matrixSize, numOfTurbine)
 
 
-global size gridSize windVel rotorRadius N
+global size gridSize windVel rotorRadius N windSpeedMatrix
 size= matrixSize;
 gridSize = 80;
 windVel=12;
@@ -27,6 +27,8 @@ N=numOfTurbine;
 %   BestSoln: The best solution obtained
 %   BestSolnCost: The best solution cost
 
+windSpeedMatrix = initWindSpeedMatrix(size);
+
 % Generate the initial solution
 [Soln SolnCost TabuList] = GenInitialSln(size,numOfTurbine);
 
@@ -46,10 +48,25 @@ for nIt = 1 : NumIterations
         BestSoln = Soln;
         BestSolnCost = SolnCost;
     end
-    
     %BestSoln
 end
 
+end
+
+% initialize the wind park with different wind speeds
+function windSpeedMatrix = initWindSpeedMatrix(size)
+    global windVel
+    % init a N by N matrix
+    m = ones(size);
+    m = m*12;
+    
+    for i=1:floor(size/4)
+        for j=0:3
+            windDiff = 2 * j;
+            m(i+j,:) = windDiff + windVel;
+        end
+    end
+    windSpeedMatrix=m;
 end
 
 function [initialM, result, TabuList] = GenInitialSln(size, numTurbine)
@@ -215,10 +232,6 @@ function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln,
             TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
         end
     end
-    
-    PWR=CalculateTotalPower(curBestSoln);
-    %PWR
-    
 end
 
 function result = CalculateCostFunc(m)
@@ -254,7 +267,7 @@ function pwr = CalculateSingleTurbinePower(vel)
 end
 
 function vel = calculate_velocity(matrix, x, y) 
-    global gridSize size windVel
+    global gridSize size windVel windSpeedMatrix
 
     %thrus coefficient of the turbine
     ct = 0.88;
@@ -262,7 +275,7 @@ function vel = calculate_velocity(matrix, x, y)
     R = 20;
     
     vel_def_total = 0;
-    vel = windVel;
+    vel = windSpeedMatrix(x,y);
     
     for i = 1 : size
         for j = 1 : y-1
@@ -277,7 +290,7 @@ function vel = calculate_velocity(matrix, x, y)
     vel_def = sqrt(vel_def_total);
     % do not update velocity if turbine is not affected by wake loss
     if (vel_def ~= 0)
-        vel = windVel * (1-vel_def);
+        vel = vel * (1-vel_def);
     end
 end
 
