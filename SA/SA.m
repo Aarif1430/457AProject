@@ -31,7 +31,7 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
   T = sT;
   while T > fT
     for i=1:iterations
-      [newSol, newSolCost] = GetBestNeighbourSolnFn(acceptedSol);
+      [newSol, newSolCost] = GetNeighbourSolnFn(acceptedSol);
       deltaCost = newSolCost - acceptedSolCost;
       if deltaCost < 0
         acceptedSol = newSol;
@@ -91,135 +91,42 @@ function [initialM, result] = GenInitialSln(size, numTurbine)
     result = CalculateCostFunc(m);
 end
 
-function [BestNeighbour,BestNeighbourCost]=GetBestNeighbourSolnFn(Soln)
-    global size
+function [Soln,Cost]=GetNeighbourSolnFn(Soln)
+    global size N
     
-    BestNeighbour = Soln;
-    BestNeighbourCost = Inf;
-    curBestCost = Inf;
-    curBestSoln = Soln;
+    v = matrixToVec(Soln);
+    %randomly select one of the turbine to change its location
+    index=ceil(rand()*N);
+    %randomly select new location for this turbine
+    new_i=ceil(rand()*size);
+    new_j=ceil(rand()*size);
+    while Soln(new_i, new_j)~=0
+        new_i=ceil(rand()*size);
+        new_j=ceil(rand()*size);
+    end
+    
+    %remove this turbine from old location
+    Soln(v(1,index), v(2,index))=0;
+    Soln(new_i, new_j)=1;
+    
+    %calculate cost for this neighbouring solution
+    Cost = CalculateCostFunc(Soln);
+end
+
+function vector = matrixToVec(matrix)
+    global size N
+    
+    vector=zeros(2, N);
+    count=1;
     for i = 1:size
         for j = 1:size
-            if Soln(i,j)==1
-                %upper left
-                if(i-1>0 && j-1>0 && Soln(i-1,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %left
-                if(j-1>0 && Soln(i,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %lower left
-                if(i+1<=size && j-1>0 && Soln(i+1,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %lower
-                if( i+1<=size && Soln(i+1,j)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %lower right
-                if( i+1<=size && j+1<=size && Soln(i+1,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %right
-                if( j+1<=size && Soln(i,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %upper right
-                if( i-1>0 && j+1<=size && Soln(i-1,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-                
-                %upper
-                if( i-1>0 && Soln(i-1,j)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                    end
-                end
-          
-            end%end for if Soln(i,j)==1
-        end%end for j loop
-    end%end for i loop
-
-    BestNeighbour = curBestSoln;
-    BestNeighbourCost = curBestCost;
-    
+            if matrix(i,j)~=0
+                vector(1, count) = i;
+                vector(2, count) = j;
+                count = count+1;
+            end
+        end
+    end
 end
 
 function result = CalculateCostFunc(m)
