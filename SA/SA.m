@@ -38,7 +38,7 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
         acceptedSolCost = newSolCost;
       else
         randVal = rand(1);
-        p = exp(-1*deltaCost / T);
+        p = exp(-1*deltaCost * (10^14) / T);
         if p > randVal
           acceptedSol = newSol;
           acceptedSolCost = newSolCost;
