@@ -29,6 +29,7 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
   acceptedSol = bestSol;
   acceptedSolCost = bestSolCost;
   T = sT;
+  count = 1;
   while T > fT
     for i=1:iterations
       [newSol, newSolCost] = GetNeighbourSolnFn(acceptedSol);
@@ -55,7 +56,8 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
          bestSolCost = acceptedSolCost;
       end
     end
-    T = T * alpha; % cooling
+    T = T * alpha^count; % cooling
+    count = count+1;
   end
 end
 
