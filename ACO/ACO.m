@@ -32,13 +32,13 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
 
     %update pheromone concentrate
     reinforce=newSol.*pheromoneMatrix;
-    reinforce=(1-rho1)*reinforce+newSol*rho2*(0.000001/curBestSolnCost);
+    reinforce=(1-rho1)*reinforce+newSol*rho2*(0.0000000000001/curBestSolnCost);
 
     decay=(1-newSol).*pheromoneMatrix;
     decay=(1-rho1)*decay;
 
     pheromoneMatrix=reinforce+decay;
-
+    pheromoneMatrix
   end % end iterations
   
   
