@@ -189,7 +189,7 @@ function pwr = CalculateTotalPower(m)
             end
         end
     end
-    pwr=totalpower;
+    pwr=totalpower*31536000;
 end
 
 function pwr = CalculateSingleTurbinePower(vel)

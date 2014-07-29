@@ -12,11 +12,12 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
   alpha=1;
   beta=1;
   r0=0.5;
-  rho1=0.6;
+  rho1=0.3;
   rho2=1;
 
   windSpeedMatrix = initWindSpeedMatrix(size);
   pheromoneMatrix=ones(size);%initial pheromone concentration is 1
+  %pheromoneMatrix=pheromoneMatrix*100;
   curBestSol=zeros(size);
   curBestSolnCost=Inf;
 
@@ -76,6 +77,10 @@ function [m, cost] = GenSln(size, numTurbine)
             probVector(1, (i-1)*size+j) = (pheromoneMatrix(i, j)^alpha) * ((desirability)^beta);
         end
     end
+    [ma i]=min(probVector);
+    %ma
+    
+    %probVector
 
     while count<numTurbine
         if rand() >= r0
@@ -119,6 +124,7 @@ function [m, cost] = GenSln(size, numTurbine)
     end
 
     cost = CalculateCostFunc(m);
+
 end
 
 
@@ -140,7 +146,7 @@ function pwr = CalculateTotalPower(m)
             end
         end
     end
-    pwr=totalpower;
+    pwr=totalpower*31536000;
 end
 
 function pwr = CalculateSingleTurbinePower(vel)
