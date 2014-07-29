@@ -38,7 +38,7 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
     decay=(1-rho1)*decay;
 
     pheromoneMatrix=reinforce+decay;
-    pheromoneMatrix
+
   end % end iterations
   
   
