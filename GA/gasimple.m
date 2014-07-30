@@ -27,7 +27,6 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
         for j=1:popsize,
             % Cross over
             if pc>rand,
-                %TODO: check for duplicate locations?
                 while true
                     % Crossover pair
                     ii=floor(popsize*rand)+1; jj=floor(popsize*rand)+1;
@@ -50,19 +49,12 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
                 evolve(kk);
             end
         end % end for j
-        % Record the current best
-        %bestfun(i)=max(fitness);
-        %bestsol(i)=mean(sol(bestfun(i)==fitness));
     end
     
     [value,index] = max(fitness);
     bestSoln=chromesomeToMatrix(popnew(index,:));
     bestCost=(10^-14-10^-14*value)/value;   %change the fitness back to our objective function
     
-    % Display results
-    %set(gcf,'color','w');
-    %5subplot (2,1,1); plot(bestsol); title('Best estimates');
-    %subplot(2,1,2); plot(bestfun); title('Fitness');
 end
 
 % initialize the wind park with different wind speeds

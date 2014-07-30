@@ -6,15 +6,18 @@ function [BestSln, BestSlnCost]=PSO(NumIterations,matrixSize, numOfTurbine, numP
     rotorRadius=20;
     N=numOfTurbine;
     size=matrixSize;
-     
+    
+    % store personal bests, global bests and current positions
     pBestLocs = zeros(numParticle, 2*numOfTurbine);
     pBestValue = zeros(numParticle, 1);
     gBestValue = Inf;
     gBestLocs = zeros(1, 2*numOfTurbine);
     curLocs = zeros(numParticle, 2*numOfTurbine);
     
+    %initialze various wind speeds in the wind park area
     windSpeedMatrix = initWindSpeedMatrix(size);
     
+    % generate initial particles
     for i=1:numParticle
         [locs, cost] = GenInitialSln(size, numOfTurbine);
         pBestLocs(i,:)=locs;

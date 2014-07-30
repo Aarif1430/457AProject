@@ -1,6 +1,15 @@
-%function  [BestSoln BestSolnCost] = TabuSearch( ...
-%                ProbData, TabuLength, NumIterations, ...      
-%                GenInitialSolnFn, GetBestNeighbourSolnFn, matrixSize, numOfTurbine)
+% This function implements the tabu search algorithm.
+%
+% Inputs:
+%   TabuLength: The length of the tabu list
+%   NumIterations: The maximum number of iterations
+%   matrixSize: The width (or height) of the square grid to be used as the wind park
+%   numOfTurbine: The number of turbines
+%
+% Outputs:
+%   BestSoln: The best solution obtained
+%   BestSolnCost: The best solution cost
+
 function  [BestSoln BestSolnCost] = TabuSearch(TabuLength, NumIterations,matrixSize, numOfTurbine)
 
 
@@ -10,22 +19,6 @@ gridSize = 80;
 windVel=12;
 rotorRadius=20;
 N=numOfTurbine;
-            
-% This function implements the tabu search algorithm.
-%
-% Inputs:
-%   ProbData: The data of the problem to be solved.
-%   TabuLength: The length of the tabu list
-%   NumIterations: The maximum number of iterations
-%   GenInitialSolnFn: A handle to a function that generates an initial
-%                     solution to the problem.
-%   GetBestNeighbourSolnFn: A hanlde to a function that generates the 
-%                         neighbourhood of a given solution and update
-%                         the best neighborhood.
-%
-% Outputs:
-%   BestSoln: The best solution obtained
-%   BestSolnCost: The best solution cost
 
 windSpeedMatrix = initWindSpeedMatrix(size);
 
@@ -38,9 +31,6 @@ BestSolnCost = SolnCost;
 
 for nIt = 1 : NumIterations
     % Get the best solution in the neighbourhood of the current solution
-    % avoiding Tabu moves
-    %[Soln SolnCost TabuList] = feval(GetBestNeighbourSolnFn, ...
-    %                            Soln, TabuList, TabuLength, BestSolnCost);
     [Soln SolnCost TabuList] = GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost);
             
     % Update the best solution
@@ -69,6 +59,7 @@ function windSpeedMatrix = initWindSpeedMatrix(size)
     windSpeedMatrix=m;
 end
 
+% get a random initial solution
 function [initialM, result, TabuList] = GenInitialSln(size, numTurbine)
     m=zeros(size,size);
     count=0;
@@ -86,6 +77,7 @@ function [initialM, result, TabuList] = GenInitialSln(size, numTurbine)
     TabuList=zeros(size,size);
 end
 
+% neighouring solutions
 function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost) 
     bannedMoves=zeros(2, 1);
     mapsize=size(Soln,1);
@@ -244,6 +236,7 @@ function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln,
     end
 end
 
+% check if the location (i,j) is previously rejected by the getNeighbour function
 function result = checkBannedMoves(bannedMoves, i, j)
     result = 0;
 
@@ -255,6 +248,7 @@ function result = checkBannedMoves(bannedMoves, i, j)
     end
 end
 
+% calculate objective function
 function result = CalculateCostFunc(m)
     N=sum(sum(m));
     cost = N*(2/3+1/3*exp(-0.00174*N^2));

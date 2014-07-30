@@ -1,13 +1,14 @@
 % Simulated Annealing Algorithm
 %
-% costs: history of cost for each iteration's schedule.
+% bestSolCost: best solution cost.
 % bestSol: best solution for the given sT and fT.
 %
 % iterations: number of iteration for each T.
 % sT: start T.
 % fT: final T.
 % alpha: alpha in geometric cooling schedule.
-
+% matrixSize: the width (or height) of the square grid to be used as the wind park.
+% numOfTurbine: the number of turbines.
 
 
 function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numOfTurbine)
@@ -22,6 +23,7 @@ function [bestSolCost, bestSol] = SA(iterations, sT, fT, alpha, matrixSize, numO
   costsEnd = 0;
   costs = [];
   
+  %initialze various wind speeds in the wind park area
   windSpeedMatrix = initWindSpeedMatrix(size);
   
   %generate a random initial soln

@@ -1,4 +1,4 @@
-% Ant Colony
+% Ant Colony Implementation
 %
 % 
 
@@ -17,7 +17,6 @@ function [curBestSolnCost, curBestSol] = ACO(iterations, matrixSize, numOfTurbin
 
   windSpeedMatrix = initWindSpeedMatrix(size);
   pheromoneMatrix=ones(size);%initial pheromone concentration is 1
-  %pheromoneMatrix=pheromoneMatrix*100;
   curBestSol=zeros(size);
   curBestSolnCost=Inf;
 
