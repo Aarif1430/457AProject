@@ -86,150 +86,171 @@ function [initialM, result, TabuList] = GenInitialSln(size, numTurbine)
     TabuList=zeros(size,size);
 end
 
-function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost)
-    global size
-    
-    BestNeighbour = Soln;
-    BestNeighbourCost = Inf;
-    curBestCost = Inf;
-    curBestSoln = Soln;
-    potentialTabu = [0,0];
-    for i = 1:size
-        for j = 1:size
-            if Soln(i,j)==1
-                %upper left
-                if(i-1>0 && j-1>0 && Soln(i-1,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i-1,j-1];
+function [BestNeighbour,BestNeighbourCost,TabuList]=GetBestNeighbourSolnFn(Soln, TabuList, TabuLength, BestSolnCost) 
+    bannedMoves=zeros(2, 1);
+    mapsize=size(Soln,1);
+
+    while true
+        BestNeighbour = Soln;
+        BestNeighbourCost = Inf;
+        curBestCost = Inf;
+        curBestSoln = Soln;
+        potentialTabu = [0,0];
+        
+        for i = 1:mapsize
+            for j = 1:mapsize
+                if Soln(i,j)==1
+                    %upper left
+                    if(i-1>0 && j-1>0 && Soln(i-1,j-1)~=1 && checkBannedMoves(bannedMoves, i-1, j-1)==0)
+                        matrix = Soln;
+
+                        matrix(i-1,j-1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i-1,j-1];
+                        end
                     end
-                end
-                
-                %left
-                if(j-1>0 && Soln(i,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i,j-1];
+
+                    %left
+                    if(j-1>0 && Soln(i,j-1)~=1 && checkBannedMoves(bannedMoves, i, j-1)==0)
+                        matrix = Soln;
+
+                        matrix(i,j-1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i,j-1];
+                        end
                     end
-                end
-                
-                %lower left
-                if(i+1<=size && j-1>0 && Soln(i+1,j-1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j-1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i+1,j-1];
+
+                    %lower left
+                    if(i+1<=mapsize && j-1>0 && Soln(i+1,j-1)~=1 && checkBannedMoves(bannedMoves, i+1, j-1)==0)
+                        matrix = Soln;
+
+                        matrix(i+1,j-1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i+1,j-1];
+                        end
                     end
-                end
-                
-                %lower
-                if( i+1<=size && Soln(i+1,j)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i+1,j];
+
+                    %lower
+                    if( i+1<=mapsize && Soln(i+1,j)~=1 && checkBannedMoves(bannedMoves, i+1, j)==0)
+                        matrix = Soln;
+
+                        matrix(i+1,j)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i+1,j];
+                        end
                     end
-                end
-                
-                %lower right
-                if( i+1<=size && j+1<=size && Soln(i+1,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i+1,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i+1,j+1];
+
+                    %lower right
+                    if( i+1<=mapsize && j+1<=mapsize && Soln(i+1,j+1)~=1 && checkBannedMoves(bannedMoves, i+1, j+1)==0)
+                        matrix = Soln;
+
+                        matrix(i+1,j+1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i+1,j+1];
+                        end
                     end
-                end
-                
-                %right
-                if( j+1<=size && Soln(i,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i,j+1];
+
+                    %right
+                    if( j+1<=mapsize && Soln(i,j+1)~=1 && checkBannedMoves(bannedMoves, i, j+1)==0)
+                        matrix = Soln;
+
+                        matrix(i,j+1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i,j+1];
+                        end
                     end
-                end
-                
-                %upper right
-                if( i-1>0 && j+1<=size && Soln(i-1,j+1)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j+1)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i-1,j+1];
+
+                    %upper right
+                    if( i-1>0 && j+1<=mapsize && Soln(i-1,j+1)~=1 && checkBannedMoves(bannedMoves, i-1, j+1)==0)
+                        matrix = Soln;
+
+                        matrix(i-1,j+1)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i-1,j+1];
+                        end
                     end
-                end
-                
-                %upper
-                if( i-1>0 && Soln(i-1,j)~=1)
-                    matrix = Soln;
-                    
-                    matrix(i-1,j)=1;
-                    matrix(i,j)=0;
-                    
-                    cost = CalculateCostFunc(matrix);
-                    if(cost < curBestCost)
-                        curBestCost = cost;
-                        curBestSoln = matrix;
-                        potentialTabu=[i-1,j];
+
+                    %upper
+                    if( i-1>0 && Soln(i-1,j)~=1 && checkBannedMoves(bannedMoves, i-1, j)==0)
+                        matrix = Soln;
+
+                        matrix(i-1,j)=1;
+                        matrix(i,j)=0;
+
+                        cost = CalculateCostFunc(matrix);
+                        if(cost < curBestCost)
+                            curBestCost = cost;
+                            curBestSoln = matrix;
+                            potentialTabu=[i-1,j];
+                        end
                     end
-                end
-          
-            end%end for if Soln(i,j)==1
-        end%end for j loop
-    end%end for i loop
-    
-    %update other tabu value
-    TabuList=TabuList-1;
-    
-    %aspiration criterion
-    if or(TabuList(potentialTabu(1),potentialTabu(2))<=0, curBestSoln < BestSolnCost)
-        BestNeighbour = curBestSoln;
-        BestNeighbourCost = curBestCost;
-        if potentialTabu(1)~=0
-            TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
+
+                end%end for if Soln(i,j)==1
+            end%end for j loop
+        end%end for i loop
+
+        %update other tabu value
+        TabuList=TabuList-1;
+
+        %aspiration criterion
+        if or(TabuList(potentialTabu(1),potentialTabu(2))<=0, curBestSoln < BestSolnCost)
+            BestNeighbour = curBestSoln;
+            BestNeighbourCost = curBestCost;
+            if potentialTabu(1)~=0
+                TabuList(potentialTabu(1),potentialTabu(2))=TabuLength;
+            end
+            break;
+        else
+            index=size(bannedMoves,2); %num of column
+            index=index+1;
+            bannedMoves(1, index) = potentialTabu(1);
+            bannedMoves(2, index) = potentialTabu(2);
+        end
+    end
+end
+
+function result = checkBannedMoves(bannedMoves, i, j)
+    result = 0;
+
+    for iter=1:size(bannedMoves,2)
+        if i==bannedMoves(1,iter) && j==bannedMoves(2,iter)
+            result=1;
+            break;
         end
     end
 end

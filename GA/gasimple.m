@@ -57,7 +57,7 @@ function [bestSoln, bestCost]=gasimple(matrixSize, popsize, iterations, pc, pm, 
     
     [value,index] = max(fitness);
     bestSoln=chromesomeToMatrix(popnew(index,:));
-    bestCost=(1-0.00001*value)/value;   %change the fitness back to our objective function
+    bestCost=(10^-14-10^-14*value)/value;   %change the fitness back to our objective function
     
     % Display results
     %set(gcf,'color','w');
@@ -140,15 +140,17 @@ end
 % Calculate cost function for GA problem
 function cost = calcFitness(m)
     f = CalculateCostFunc(m);
-    cost = 1/(0.00001+f);
+    cost = 10^-14/(10^-14+f);
 end
 
 % Evolving the new generation
 function evolve(j)
     global popnew fitness fitold pop;
     curSoln = chromesomeToMatrix(popnew(j,:));
-    fitness(j)=calcFitness(curSoln);
-    if fitness(j)>fitold(j),
+    curFitness = calcFitness(curSoln);
+   
+    if curFitness>fitold(j)
+        fitness(j)=curFitness;
         pop(j,:)=popnew(j,:);
     end
 end
